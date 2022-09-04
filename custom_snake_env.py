@@ -177,7 +177,7 @@ class SnakeGame(gym.Env):
         for a, agent in enumerate(self.agents):
             vx = move_to_direction((0, 0), agent.direction)
             vy = move_to_direction((0, 0), (agent.direction-1) % 4)
-            pov = np.zeros((3, 3))
+            pov = np.zeros((2, 3))
             hx, hy = agent.head
             for i in range(2):
                 for j in range(3):
