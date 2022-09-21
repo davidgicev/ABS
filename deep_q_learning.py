@@ -72,7 +72,7 @@ class DQN:
         :param model_name: name of the model
         :param episode: episode checkpoint
         """
-        self.model.load_weights(f'dqn_{model_name}_{episode}.h5')
+        self.model.load_weights(f'./saved/dqn_{model_name}_{episode}.h5')
 
     def save(self, model_name, episode):
         """
@@ -80,13 +80,17 @@ class DQN:
         :param model_name: name of the model
         :param episode: episode checkpoint
         """
-        self.model.save_weights(f'dqn_{model_name}_{episode}.h5')
+        self.model.save_weights(f'./saved/dqn_{model_name}_{episode}.h5')
 
     def train(self):
         """
         Performs one step of model training.
         """
         batch_size = min(self.batch_size, len(self.memory))
+        # filtered = [m for m in self.memory if m[2] < -0.5]
+        # minibatch = random.sample(self.memory, batch_size) + filtered
+        # print("negative examples", len(filtered))
+        # batch_size = len(minibatch)
         minibatch = random.sample(self.memory, batch_size)
 
         if isinstance(self.state_space_shape, tuple):
@@ -174,7 +178,7 @@ class DDQN:
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            return np.argmax(self.model.predict(state, verbose=0)[0])
+            return np.argmax(self.model(state)[0])
 
     def load(self, model_name, episode):
         """
@@ -214,14 +218,14 @@ class DDQN:
                     next_state = next_state.reshape((1,) + self.state_space_shape)
                 else:
                     next_state = next_state.reshape(1, self.state_space_shape)
-                max_action = np.argmax(self.model.predict(next_state, verbose=0)[0])
+                max_action = np.argmax(self.model(next_state)[0])
                 max_future_q = (reward + self.discount_factor *
-                                self.target_model.predict(next_state, verbose=0)[0][max_action])
+                                self.target_model(next_state)[0][max_action])
             if isinstance(self.state_space_shape, tuple):
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            target_q = self.model.predict(state, verbose=0)[0]
+            target_q = list(self.model(state)[0])
             target_q[action] = max_future_q
             states[i] = state
             actions[i] = target_q
@@ -309,7 +313,7 @@ class DuelingDQN:
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            return np.argmax(self.model.predict(state, verbose=0)[0])
+            return np.argmax(self.model(state)[0])
 
     def load(self, model_name, episode):
         """
@@ -332,7 +336,8 @@ class DuelingDQN:
         Performs one step of model training.
         """
         batch_size = min(self.batch_size, len(self.memory))
-        minibatch = random.sample(self.memory, batch_size)
+        filtered = [m for m in self.memory if m[2] < -0.5]
+        minibatch = random.sample(self.memory, batch_size) + filtered
 
         if isinstance(self.state_space_shape, tuple):
             states = np.zeros((batch_size,) + self.state_space_shape)
@@ -350,12 +355,12 @@ class DuelingDQN:
                 else:
                     next_state = next_state.reshape(1, self.state_space_shape)
                 max_future_q = (reward + self.discount_factor *
-                                np.amax(self.target_model.predict(next_state, verbose=0)[0]))
+                                np.amax(self.target_model(next_state)[0]))
             if isinstance(self.state_space_shape, tuple):
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            target_q = self.model.predict(state, verbose=0)[0]
+            target_q = list(self.model(state)[0])
             target_q[action] = max_future_q
             states[i] = state
             actions[i] = target_q
@@ -470,7 +475,7 @@ class DDPG:
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            return np.argmax(self.actor.predict(state, verbose=0)[0])
+            return np.argmax(self.actor(state)[0])
 
     def _get_continuous_action(self, state, epsilon=0):
         """
@@ -487,7 +492,7 @@ class DDPG:
                 state = state.reshape((1,) + self.state_space_shape)
             else:
                 state = state.reshape(1, self.state_space_shape)
-            return self.actor.predict(state, verbose=0)[0]
+            return self.actor(state)[0]
 
     def get_action(self, state, epsilon=0, discrete=True):
         """

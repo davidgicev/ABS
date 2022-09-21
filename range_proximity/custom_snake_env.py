@@ -69,7 +69,7 @@ class SnakeGame(gym.Env):
         self.num_fruits = num_fruits
         self.width = width
         self.height = height
-        self.scale = 15
+        self.scale = 18
         self.display_width = (width+2) * self.scale
         self.display_height = (height+2) * self.scale
         self.steps = 0
@@ -107,11 +107,10 @@ class SnakeGame(gym.Env):
             self.fruits = [x for x in self.fruits if x != preview]
             if ate_food:
                 rewards[i] = 10
-                if len(self.fruits) < self.num_fruits:
-                    # self.fruits = []
-                    generated = list(self.fruits)
-                    num_more = self.num_fruits - len(self.fruits)
-                    for i in range(num_more):
+                if len(self.fruits) == 0:
+                    self.fruits = []
+                    generated = []
+                    for i in range(self.num_fruits):
                         pair = generate_unique(generated, (self.width, self.height))
                         self.fruits.append(pair)
                         generated.append(pair)

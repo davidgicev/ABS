@@ -3,12 +3,11 @@ from pygame.locals import *
 import pygame
 
 import custom_snake_env
-from snake_env import SnakeEnv
 import time
 
 
 num_agents = 1
-env = custom_snake_env.SnakeGame(num_agents, width=30, height=30)
+env = custom_snake_env.SnakeGame(num_agents, width=10, height=10, num_fruits=2)
 env.render()
 
 while True:
@@ -35,6 +34,7 @@ while True:
     obs, r, done, _ = env.step(actions)
     env.render()
     print(obs)
+    print(r)
     if done:
         env.reset()
 

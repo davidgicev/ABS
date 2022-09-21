@@ -32,7 +32,7 @@ def build_model(state_space_shape, num_actions, learning_rate):
 
 
 if __name__ == '__main__':
-    env = SnakeGame(num_fruits=20, width=60, height=60, num_agents=8)
+    env = SnakeGame(num_fruits=3, width=30, height=30, num_agents=3)
     env.max_steps = 1000
     # env.reset()
 
@@ -87,9 +87,9 @@ if __name__ == '__main__':
             state = new_state
             sum_rewards = sum_rewards + sum(rewards)
             steps = steps + 1
-            if testing and sum_rewards > 500 and agent_dead.count(False) > 5:
+            if testing:
                 env.render()
-                time.sleep(0.1)
+                time.sleep(0.05)
         print("rewards", sum_rewards)
         print("steps", steps)
         print("steps/s", steps/(time.time() - start_time + 0.001))

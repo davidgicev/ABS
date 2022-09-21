@@ -69,7 +69,7 @@ class SnakeGame(gym.Env):
         self.num_fruits = num_fruits
         self.width = width
         self.height = height
-        self.scale = 15
+        self.scale = 18
         self.display_width = (width+2) * self.scale
         self.display_height = (height+2) * self.scale
         self.steps = 0
@@ -88,7 +88,7 @@ class SnakeGame(gym.Env):
         )
 
     def step(self, actions):
-        rewards = [-0.1] * self.num_agents
+        rewards = [-0.01] * self.num_agents
         actions = [a-1 for a in actions]
 
         for i, agent in enumerate(self.agents):
@@ -100,18 +100,17 @@ class SnakeGame(gym.Env):
             ate_food = preview in self.fruits
             agent.move(actions[i], ate_food)
 
-            closest = self.fruits[np.argmin([math.dist(f, agent.head) for f in self.fruits])]
-            if math.dist(head_snapshot, closest) > math.dist(agent.head, closest):
-                rewards[i] = 0.1
+            # closest = self.fruits[np.argmin([math.dist(f, agent.head) for f in self.fruits])]
+            # if math.dist(head_snapshot, closest) > math.dist(agent.head, closest):
+            #     rewards[i] = 0.1
 
             self.fruits = [x for x in self.fruits if x != preview]
             if ate_food:
                 rewards[i] = 10
-                if len(self.fruits) < self.num_fruits:
-                    # self.fruits = []
-                    generated = list(self.fruits)
-                    num_more = self.num_fruits - len(self.fruits)
-                    for i in range(num_more):
+                if len(self.fruits) == 0:
+                    self.fruits = []
+                    generated = []
+                    for i in range(self.num_fruits):
                         pair = generate_unique(generated, (self.width, self.height))
                         self.fruits.append(pair)
                         generated.append(pair)
@@ -172,7 +171,11 @@ class SnakeGame(gym.Env):
     def get_new_relative_state(self):
         states = []
         for agent in self.agents:
-            other_snake_bodies = [b for b in [a.body for a in self.agents if a != agent]][0]
+            if self.num_agents == 1:
+                other_snake_bodies = []
+            else:
+                other_snake_bodies = [b for b in [a.body for a in self.agents if a != agent]][0]
+
             closest = self.fruits[np.argmin([math.dist(f, agent.head) for f in self.fruits])]
             x, y = agent.head
             bodies_right = sum([1 for b in other_snake_bodies if 0 < b[0] - x < 3 and math.dist(b, agent.head) < 5]) > 1

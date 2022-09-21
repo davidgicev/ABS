@@ -69,7 +69,7 @@ class SnakeGame(gym.Env):
         self.num_fruits = num_fruits
         self.width = width
         self.height = height
-        self.scale = 15
+        self.scale = 18
         self.display_width = (width+2) * self.scale
         self.display_height = (height+2) * self.scale
         self.steps = 0
@@ -107,11 +107,10 @@ class SnakeGame(gym.Env):
             self.fruits = [x for x in self.fruits if x != preview]
             if ate_food:
                 rewards[i] = 10
-                if len(self.fruits) < self.num_fruits:
-                    # self.fruits = []
-                    generated = list(self.fruits)
-                    num_more = self.num_fruits - len(self.fruits)
-                    for i in range(num_more):
+                if len(self.fruits) == 0:
+                    self.fruits = []
+                    generated = []
+                    for i in range(self.num_fruits):
                         pair = generate_unique(generated, (self.width, self.height))
                         self.fruits.append(pair)
                         generated.append(pair)
@@ -172,30 +171,25 @@ class SnakeGame(gym.Env):
     def get_new_relative_state(self):
         states = []
         for agent in self.agents:
-            other_snake_bodies = [b for b in [a.body for a in self.agents if a != agent]][0]
             closest = self.fruits[np.argmin([math.dist(f, agent.head) for f in self.fruits])]
             x, y = agent.head
-            bodies_right = sum([1 for b in other_snake_bodies if 0 < b[0] - x < 3 and math.dist(b, agent.head) < 5]) > 1
-            bodies_left = sum([1 for b in other_snake_bodies if 0 < x - b[0] < 3 and math.dist(b, agent.head) < 5]) > 1
-            bodies_down = sum([1 for b in other_snake_bodies if 0 < b[1] - y < 3 and math.dist(b, agent.head) < 5]) > 1
-            bodies_up = sum([1 for b in other_snake_bodies if 0 < y - b[1] < 3 and math.dist(b, agent.head) < 5]) > 1
             state = (
                 int(closest[0] > x),
                 int(closest[0] < x),
                 int(closest[1] > y),
                 int(closest[1] < y),
-                int(x == 0),
-                int(y == 0),
-                int(x == self.width - 1),
-                int(y == self.height - 1),
-                int(bodies_left or (x - 1, y) in agent.body),
-                int(bodies_up or (x, y - 1) in agent.body),
-                int(bodies_right or (x + 1, y) in agent.body),
-                int(bodies_down or (x, y + 1) in agent.body),
+                int(x == 0 or (x - 1, y) in agent.body),
+                int(y == 0 or (x, y - 1) in agent.body),
+                int(x == self.width - 1 or (x + 1, y) in agent.body),
+                int(y == self.height - 1 or (x, y + 1) in agent.body),
                 int(agent.direction == 0),
                 int(agent.direction == 1),
                 int(agent.direction == 2),
                 int(agent.direction == 3),
+                0,
+                0,
+                0,
+                0,
             )
             states.append(state)
         return np.array(states)
